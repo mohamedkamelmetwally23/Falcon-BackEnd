@@ -37,7 +37,6 @@ export async function importLaptops(request, response) {
   if (!Array.isArray(laptops) || !laptops.length) return response.status(400).json({ message: 'ملف Excel لا يحتوي على أجهزة صالحة' });
   const cleaned = laptops.map(cleanLaptop);
   await Promise.all(cleaned.map(item => new Laptop(item).validate()));
-  await Laptop.deleteMany({});
   const inserted = await Laptop.insertMany(cleaned);
   response.status(201).json(inserted);
 }
