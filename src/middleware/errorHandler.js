@@ -5,5 +5,12 @@ export function notFound(request, response) {
 export function errorHandler(error, _request, response, _next) {
   console.error(error);
   const validationError = error.name === 'ValidationError' || error.name === 'CastError';
-  response.status(validationError ? 400 : 500).json({ message: validationError ? 'البيانات المرسلة غير صالحة' : 'حدث خطأ في الخادم' });
+  const databaseUnavailable = error.name === 'MongooseServerSelectionError';
+  const status = validationError ? 400 : databaseUnavailable ? 503 : 500;
+  const message = validationError
+    ? 'البيانات المرسلة غير صالحة'
+    : databaseUnavailable
+      ? 'قاعدة البيانات غير متاحة حاليًا. تحقق من إعدادات MongoDB Atlas Network Access.'
+      : 'حدث خطأ في الخادم';
+  response.status(status).json({ message });
 }
