@@ -6,6 +6,8 @@ const cleanLaptop = item => ({
   processor: item.processor,
   ram: item.ram || '',
   storage: item.storage || '',
+  listName: item.listName || '',
+  cost: Number(item.cost) || 0,
   price: Number(item.price),
   quantity: Number(item.quantity),
 });

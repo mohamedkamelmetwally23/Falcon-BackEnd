@@ -3,6 +3,9 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import laptopRoutes from './routes/laptopRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import returnRoutes from './routes/returnRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { connectDatabase } from './config/database.js';
 
@@ -20,7 +23,7 @@ app.get('/', (_request, response) => response.json({
   },
 }));
 app.get('/api/health', (_request, response) => response.json({ status: 'ok' }));
-app.use('/api/laptops', async (_request, _response, next) => {
+app.use('/api', async (_request, _response, next) => {
   try {
     await connectDatabase();
     next();
@@ -29,6 +32,9 @@ app.use('/api/laptops', async (_request, _response, next) => {
   }
 });
 app.use('/api/laptops', laptopRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/returns', returnRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
