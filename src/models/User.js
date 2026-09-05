@@ -5,7 +5,9 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true, trim: true },
   email: { type: String, sparse: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 8, select: false },
-  role: { type: String, enum: ['admin', 'user'], default: 'user' },
+  role: { type: String, enum: ['super_admin', 'admin', 'employee'], default: 'employee' },
+  branch: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', default: null },
+  active: { type: Boolean, default: true },
 }, { timestamps: true, versionKey: false });
 
 userSchema.pre('save', async function hashPassword() {

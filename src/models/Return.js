@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const returnSchema = new mongoose.Schema({
+  branch: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true, index: true },
   order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
   orderItem: { type: mongoose.Schema.Types.ObjectId, required: true },
   laptop: { type: mongoose.Schema.Types.ObjectId, ref: 'Laptop', required: true },

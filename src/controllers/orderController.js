@@ -22,7 +22,7 @@ export async function createOrder(request, response) {
   const notes = String(request.body.notes || "")
     .trim()
     .slice(0, 1000);
-  const customer = await Customer.findById(request.body.customerId);
+  const customer = await Customer.findOne({ _id: request.body.customerId, branch: request.branchId });
   if (!customer)
     return response.status(400).json({ message: "يجب اختيار عميل صحيح" });
   const paidAmount = Number(request.body.paidAmount || 0);
@@ -40,7 +40,7 @@ export async function createOrder(request, response) {
     return response
       .status(400)
       .json({ message: "لا يمكن تكرار نفس الجهاز في أكثر من بند" });
-  const laptops = await Laptop.find({ _id: { $in: ids } });
+  const laptops = await Laptop.find({ _id: { $in: ids }, branch: request.branchId });
   if (laptops.length !== ids.length)
     return response.status(404).json({ message: "أحد الأجهزة غير موجود" });
   const items = requested.map((requestedItem) => {
@@ -68,6 +68,7 @@ export async function createOrder(request, response) {
       .status(400)
       .json({ message: "المبلغ المدفوع أكبر من إجمالي الفاتورة" });
   const order = await Order.create({
+    branch: request.branchId,
     user: request.user.id,
     customer: customer.id,
     customerName: customer.name,
@@ -80,13 +81,14 @@ export async function createOrder(request, response) {
   response.status(201).json(await populated(Order.findById(order.id)));
 }
 export async function listOrders(request, response) {
-  const returnedOrderIds = await Return.distinct("order");
+  const returnedOrderIds = await Return.distinct("order", { branch: request.branchId });
   if (returnedOrderIds.length)
     await Order.updateMany(
-      { _id: { $in: returnedOrderIds }, status: "confirmed" },
+      { _id: { $in: returnedOrderIds }, branch: request.branchId, status: "confirmed" },
       { status: "returned" },
     );
-  const filter = request.user.role === "admin" ? {} : { user: request.user.id };
+  const filter = { branch: request.branchId };
+  if (request.user.role === "employee") filter.user = request.user.id;
   response.json(await populated(Order.find(filter).sort({ createdAt: -1 })));
 }
 export async function updateOrderStatus(request, response) {
@@ -94,8 +96,8 @@ export async function updateOrderStatus(request, response) {
   if (!allowed.includes(request.body.status))
     return response.status(400).json({ message: "حالة الأوردر غير صحيحة" });
   const order = await populated(
-    Order.findByIdAndUpdate(
-      request.params.id,
+    Order.findOneAndUpdate(
+      { _id: request.params.id, branch: request.branchId },
       { status: request.body.status },
       { new: true },
     ),
@@ -110,7 +112,7 @@ export async function confirmOrder(request, response) {
   try {
     let saved;
     await session.withTransaction(async () => {
-      const order = await Order.findById(request.params.id).session(session);
+      const order = await Order.findOne({ _id: request.params.id, branch: request.branchId }).session(session);
       if (!order)
         throw Object.assign(new Error("الفاتورة غير موجودة"), { status: 404 });
       if (order.status !== "new")
@@ -153,7 +155,7 @@ export async function confirmOrder(request, response) {
         : order.total;
       for (const line of lines) {
         const result = await Laptop.updateOne(
-          { _id: line.laptop, quantity: { $gte: line.quantity } },
+          { _id: line.laptop, branch: request.branchId, quantity: { $gte: line.quantity } },
           { $inc: { quantity: -line.quantity } },
           { session },
         );
@@ -168,7 +170,7 @@ export async function confirmOrder(request, response) {
       order.status = "confirmed";
       order.confirmedAt = new Date();
       if (order.customer) {
-        const customer = await Customer.findById(order.customer).session(
+        const customer = await Customer.findOne({ _id: order.customer, branch: request.branchId }).session(
           session,
         );
         if (customer) {
@@ -187,7 +189,7 @@ export async function confirmOrder(request, response) {
       await order.save({ session });
       saved = order.id;
     });
-    response.json(await populated(Order.findById(saved)));
+    response.json(await populated(Order.findOne({ _id: saved, branch: request.branchId })));
   } finally {
     await session.endSession();
   }
@@ -195,7 +197,7 @@ export async function confirmOrder(request, response) {
 
 export async function rejectOrder(request, response) {
   const order = await Order.findOneAndUpdate(
-    { _id: request.params.id, status: "new" },
+    { _id: request.params.id, branch: request.branchId, status: "new" },
     { status: "rejected" },
     { new: true },
   );
@@ -203,5 +205,5 @@ export async function rejectOrder(request, response) {
     return response
       .status(400)
       .json({ message: "الفاتورة غير موجودة أو تم اتخاذ إجراء عليها" });
-  response.json(await populated(Order.findById(order.id)));
+  response.json(await populated(Order.findOne({ _id: order.id, branch: request.branchId })));
 }

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const laptopSchema = new mongoose.Schema({
+  branch: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true, index: true },
   brand: { type: String, trim: true, default: 'غير محدد' },
   model: { type: String, trim: true, required: true },
   processor: { type: String, trim: true, required: true },

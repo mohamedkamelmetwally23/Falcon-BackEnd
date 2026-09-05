@@ -5,10 +5,10 @@ import {
   listCustomers,
   updateCustomer,
 } from "../controllers/customerController.js";
-import { adminOnly, protect } from "../middleware/auth.js";
+import { adminOnly, protect, requireBranch } from "../middleware/auth.js";
 
 const router = Router();
-router.use(protect);
+router.use(protect, requireBranch);
 router.get("/", listCustomers);
 router.use(adminOnly);
 router.post("/", createCustomer);

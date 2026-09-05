@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { confirmOrder, createOrder, listOrders, rejectOrder, updateOrderStatus } from '../controllers/orderController.js';
-import { adminOnly, protect } from '../middleware/auth.js';
+import { adminOnly, protect, requireBranch } from '../middleware/auth.js';
 const router = Router();
-router.use(protect);
+router.use(protect, requireBranch);
 router.get('/', listOrders);
 router.post('/', createOrder);
 router.patch('/:id/status', adminOnly, updateOrderStatus);

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema(
   {
+    branch: { type: mongoose.Schema.Types.ObjectId, ref: "Branch", required: true, index: true },
     amount: { type: Number, min: 0, required: true },
     note: { type: String, trim: true, maxlength: 300, default: "" },
     order: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
