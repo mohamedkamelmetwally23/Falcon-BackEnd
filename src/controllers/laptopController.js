@@ -1,7 +1,7 @@
 import Laptop from "../models/Laptop.js";
-import fs from "node:fs";
-import path from "node:path";
-import { uploadDirectory } from "../middleware/upload.js";
+
+const fileToDataUrl = (file) =>
+  `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
 
 const cleanLaptop = (item, image = item.image || "") => ({
   brand: item.brand || "غير محدد",
@@ -56,11 +56,6 @@ export async function getCatalogLaptopImage(request, response) {
     .select("image")
     .lean();
   if (!laptop?.image) return response.status(404).end();
-  if (laptop.image.startsWith("/uploads/")) {
-    const filePath = path.join(uploadDirectory, path.basename(laptop.image));
-    if (!fs.existsSync(filePath)) return response.status(404).end();
-    return response.sendFile(filePath);
-  }
   const match = laptop.image.match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (!match) return response.status(404).end();
   response.type(match[1]).send(Buffer.from(match[2], "base64"));
@@ -68,7 +63,7 @@ export async function getCatalogLaptopImage(request, response) {
 
 export async function createLaptop(request, response) {
   const image = request.file
-    ? `/uploads/${request.file.filename}`
+    ? fileToDataUrl(request.file)
     : request.body.image || "";
   const laptop = await Laptop.create(cleanLaptop(request.body, image));
   response.status(201).json(laptop);
@@ -79,7 +74,7 @@ export async function updateLaptop(request, response) {
   if (!existing)
     return response.status(404).json({ message: "الجهاز غير موجود" });
   const image = request.file
-    ? `/uploads/${request.file.filename}`
+    ? fileToDataUrl(request.file)
     : existing.image;
   const laptop = await Laptop.findOneAndUpdate(
     { _id: request.params.id },

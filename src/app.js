@@ -10,7 +10,6 @@ import returnRoutes from "./routes/returnRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { connectDatabase } from "./config/database.js";
-import path from "node:path";
 
 const app = express();
 app.use(helmet());
@@ -42,7 +41,6 @@ app.use(
   }),
 );
 app.use(express.json({ limit: "10mb" }));
-app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 app.use(morgan("dev"));
 app.get("/", (_request, response) =>
   response.json({
