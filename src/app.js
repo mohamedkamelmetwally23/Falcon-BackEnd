@@ -23,11 +23,19 @@ const allowedOrigins = new Set([
     .map((origin) => origin.trim())
     .filter(Boolean) || []),
 ]);
+const isAllowedOrigin = (requestOrigin) => {
+  if (!requestOrigin || allowedOrigins.has(requestOrigin)) return true;
+  try {
+    const url = new URL(requestOrigin);
+    return url.protocol === "https:" && url.hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+};
 app.use(
   cors({
     origin: (requestOrigin, callback) => {
-      if (!requestOrigin || allowedOrigins.has(requestOrigin))
-        return callback(null, true);
+      if (isAllowedOrigin(requestOrigin)) return callback(null, true);
       return callback(new Error("Origin is not allowed by CORS"));
     },
     credentials: true,
