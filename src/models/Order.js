@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
-    branch: { type: mongoose.Schema.Types.ObjectId, ref: "Branch", required: true, index: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     customerName: { type: String, required: true, trim: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },

@@ -3,11 +3,11 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import laptopRoutes from "./routes/laptopRoutes.js";
+import catalogRoutes from "./routes/catalogRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import returnRoutes from "./routes/returnRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
-import branchRoutes from "./routes/branchRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { connectDatabase } from "./config/database.js";
 
@@ -40,11 +40,11 @@ app.use("/api", async (_request, _response, next) => {
   }
 });
 app.use("/api/laptops", laptopRoutes);
+app.use("/api/catalog", catalogRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/returns", returnRoutes);
 app.use("/api/customers", customerRoutes);
-app.use("/api/branches", branchRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

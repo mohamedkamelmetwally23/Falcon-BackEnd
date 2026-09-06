@@ -16,24 +16,28 @@ const clean = (body) => ({
 });
 
 export async function listCustomers(request, response) {
-  response.json(await Customer.find({ branch: request.branchId }).sort({ name: 1 }));
+  response.json(await Customer.find().sort({ name: 1 }));
 }
 
 export async function createCustomer(request, response) {
   const data = clean(request.body);
   if (!data.name)
     return response.status(400).json({ message: "اسم العميل مطلوب" });
-  response.status(201).json(await Customer.create({ ...data, branch: request.branchId }));
+  response.status(201).json(await Customer.create(data));
 }
 
 export async function updateCustomer(request, response) {
   const data = clean(request.body);
   if (!data.name)
     return response.status(400).json({ message: "اسم العميل مطلوب" });
-  const customer = await Customer.findOneAndUpdate({ _id: request.params.id, branch: request.branchId }, data, {
-    new: true,
-    runValidators: true,
-  });
+  const customer = await Customer.findOneAndUpdate(
+    { _id: request.params.id },
+    data,
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
   if (!customer)
     return response.status(404).json({ message: "العميل غير موجود" });
   response.json(customer);
@@ -43,7 +47,7 @@ export async function addPayment(request, response) {
   const amount = Number(request.body.amount);
   if (!Number.isFinite(amount) || amount <= 0)
     return response.status(400).json({ message: "قيمة الدفعة غير صحيحة" });
-  const customer = await Customer.findOne({ _id: request.params.id, branch: request.branchId });
+  const customer = await Customer.findOne({ _id: request.params.id });
   if (!customer)
     return response.status(404).json({ message: "العميل غير موجود" });
   const balance = Math.max(0, customer.totalInvoiced - customer.totalPaid);
