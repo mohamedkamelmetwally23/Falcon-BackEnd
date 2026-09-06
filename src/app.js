@@ -12,7 +12,7 @@ import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { connectDatabase } from "./config/database.js";
 
 const app = express();
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://localhost:5174",
