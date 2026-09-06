@@ -10,15 +10,31 @@ import returnRoutes from "./routes/returnRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { connectDatabase } from "./config/database.js";
+import path from "node:path";
 
 const app = express();
 app.use(helmet());
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  ...(process.env.CLIENT_URL?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean) || []),
+]);
 app.use(
   cors({
-    origin: process.env.CLIENT_URL?.split(",") || "http://localhost:5173",
+    origin: (requestOrigin, callback) => {
+      if (!requestOrigin || allowedOrigins.has(requestOrigin))
+        return callback(null, true);
+      return callback(new Error("Origin is not allowed by CORS"));
+    },
+    credentials: true,
   }),
 );
 app.use(express.json({ limit: "10mb" }));
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 app.use(morgan("dev"));
 app.get("/", (_request, response) =>
   response.json({

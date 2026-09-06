@@ -16,6 +16,7 @@
     "helmet": "latest",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "latest",
-    "morgan": "latest"
+    "morgan": "latest",
+    "multer": "^2.3.0"
   }
 }
