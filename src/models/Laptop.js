@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const laptopSchema = new mongoose.Schema(
   {
     brand: { type: String, trim: true, default: "غير محدد" },
-    model: { type: String, trim: true, required: true },
-    processor: { type: String, trim: true, required: true },
+    model: { type: String, trim: true, default: "" },
+    processor: { type: String, trim: true, default: "" },
     generation: { type: String, trim: true, default: "" },
     processorType: { type: String, trim: true, default: "" },
     ram: { type: String, trim: true, default: "" },
@@ -14,8 +14,8 @@ const laptopSchema = new mongoose.Schema(
     image: { type: String, trim: true, default: "" },
     cost: { type: Number, min: 0, default: 0 },
     oldPrice: { type: Number, min: 0, default: 0 },
-    price: { type: Number, min: 0, required: true },
-    quantity: { type: Number, min: 0, required: true },
+    price: { type: Number, min: 0, default: 0 },
+    quantity: { type: Number, min: 0, default: 0 },
   },
   { timestamps: true, versionKey: false },
 );

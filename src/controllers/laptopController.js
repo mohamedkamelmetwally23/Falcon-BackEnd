@@ -16,8 +16,8 @@ const cleanLaptop = (item, image = item.image || "") => ({
   image,
   cost: Number(item.cost) || 0,
   oldPrice: Number(item.oldPrice) || 0,
-  price: Number(item.price),
-  quantity: Number(item.quantity),
+  price: Number(item.price) || 0,
+  quantity: Number(item.quantity) || 0,
 });
 
 export async function listLaptops(request, response) {
@@ -73,9 +73,7 @@ export async function updateLaptop(request, response) {
   const existing = await Laptop.findById(request.params.id);
   if (!existing)
     return response.status(404).json({ message: "الجهاز غير موجود" });
-  const image = request.file
-    ? fileToDataUrl(request.file)
-    : existing.image;
+  const image = request.file ? fileToDataUrl(request.file) : existing.image;
   const laptop = await Laptop.findOneAndUpdate(
     { _id: request.params.id },
     cleanLaptop(request.body, image),
